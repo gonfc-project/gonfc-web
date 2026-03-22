@@ -1,0 +1,30 @@
+name: Deploy to Firebase Hosting on merge
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      # 1. Flutter SDK Kurulumu (Bu adım kritik!)
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          
+      # 2. Paketleri Çek
+      - run: flutter pub get
+      
+      # 3. Web Build (API Key'i GitHub Secrets'tan çekerek güvenli derleme)
+      - run: flutter build web --release --dart-define=GEMINI_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+      
+      # 4. Canlıya Gönder
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GONFC_582F5 }}'
+          channelId: live
+          projectId: gonfc-582f5
